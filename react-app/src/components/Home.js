@@ -1,29 +1,41 @@
+//C:\react-js\myreactdev\src\components\Home.js
 import React, { useState } from "react";
 import List from "./List";
 import axios from "axios";
 
 const Home = () => {
-  const [userField, setUserField] = useState({
-    name: "",
-    email: "",
+  const [expenseField, setexpenseField] = useState({
+    title: "",
+    description: "",
     password: "",
+    expense: "",
   });
 
-  const changeUserFieldHandler = (e) => {
-    setUserField({
-      ...userField,
+  const changeExpenseFieldHandler = (e) => {
+    setexpenseField({
+      ...expenseField,
       [e.target.name]: e.target.value,
     });
-    //console.log(userField);
+    //console.log(expenseField);
   };
   const [loading, setLoading] = useState();
 
   const onSubmitChange = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("User token not found");
+      }
+
       const responce = await axios.post(
-        "http://127.0.0.1:8000/api/addnew",
-        userField
+        "http://127.0.0.1:8000/api/expenses",
+        expenseField,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       console.log(responce);
       setLoading(true);
@@ -36,70 +48,61 @@ const Home = () => {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      {/* <h2 className="w-full flex justify-center p-3">
-        React JS Laravel 10 REST API CRUD (Create, Read, Update and Delete) |
-        Axios Mysql
-      </h2> */}
-      <div className="flex flex-wrap -mx-4 mt-10">
-        <div className="w-full md:w-1/3 px-4">
-          <h3 className="font-bold text-[25px]">Add Your Detail</h3>
-          <form className="mb-5">
-            <div className="mb-3 mt-3">
-              <label className="block text-left text-gray-700 text-sm font-bold mb-2">
-                {" "}
-                Full Name:
-              </label>
-              <input
-                type="text"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="name"
-                placeholder="Enter Your Full Name"
-                name="name"
-                onChange={(e) => changeUserFieldHandler(e)}
-              />
+    <div className="container mt-3">
+      <div className="row">
+        <div className="col-md-4">
+          <div className="card mt-4">
+            <div className="card-header">
+              <h4 className="card-title">Add Expense</h4>
             </div>
-            <div className="mb-3 mt-3">
-              <label className="block text-left text-gray-700 text-sm font-bold mb-2">
-                Email:
-              </label>
-              <input
-                type="email"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="email"
-                placeholder="Enter email"
-                name="email"
-                onChange={(e) => changeUserFieldHandler(e)}
-                required
-              />
-            </div>
-            <div className="mb-3 mt-3">
-              <label className="block text-left text-gray-700 text-sm font-bold mb-2">
-                Password:
-              </label>
-              <input
-                type="text"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="password"
-                placeholder="Enter password"
-                name="password"
-                onChange={(e) => changeUserFieldHandler(e)}
-                required
-              />
-            </div>
+            <form className="m-4 text-start">
+              <div className="mb-3 text-start mt-3">
+                <label className="form-label">Expense Name:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="name"
+                  placeholder="Enter Expense Name"
+                  name="title"
+                  onChange={(e) => changeExpenseFieldHandler(e)}
+                />
+              </div>
+              <div className="mb-3 text-start mt-3">
+                <label className="form-label">Description:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="description"
+                  placeholder="Enter description"
+                  name="description"
+                  onChange={(e) => changeExpenseFieldHandler(e)}
+                  required
+                />
+              </div>
+              <div className="mb-3 text-start mt-3">
+                <label className="form-label">Expense:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="expense"
+                  placeholder="Enter Expense"
+                  name="expense"
+                  onChange={(e) => changeExpenseFieldHandler(e)}
+                  required
+                />
+              </div>
 
-            <div className="w-full flex justify-start">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className="btn text-start btn-primary"
                 onClick={(e) => onSubmitChange(e)}
               >
-                Submit
+                Add Expense
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-        <div className="w-full md:w-2/3 px-4">
+        <div className="col-md-8">
           <List />
         </div>
       </div>

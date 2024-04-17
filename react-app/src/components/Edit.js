@@ -1,117 +1,147 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-const Edit = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const clickToBackHandler = () => {
-    navigate("/");
-  };
-
-  const [userField, setUserField] = useState({
-    name: "",
-    email: "",
+function Edit({ handleClose }) {
+  
+  const [data, setData] = useState({
+    title: "",
+    description: "",
+    expense: "",
   });
 
+  const { id } = useParams();
+
   useEffect(() => {
-    fetchUser();
+    async function fetchExpense() {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/expenses/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        console.log(response.data);
+        const { title, description, expense } = response.data[0].expense; 
+        setData({ title, description, expense });
+      } catch (error) {
+        console.error("Error fetching Expense:", error);
+      }
+    }
+
+    fetchExpense();
   }, [id]);
 
-  const fetchUser = async () => {
-    try {
-      const result = await axios.get("http://127.0.0.1:8000/api/users/" + id);
-      // console.log(result.data.users);
-      setUserField(result.data.users);
-    } catch (err) {
-      console.log("Something Wrong");
-    }
+
+
+  const handleTitleChange = (e) => {
+    setData((prevState) => ({
+      ...prevState,
+      title: e.target.value,
+    }));
   };
 
-  const changeUserFieldHandler = (e) => {
-    setUserField({
-      ...userField,
-      [e.target.name]: e.target.value,
-    });
-    console.log(userField);
+  const handleDescriptionChange = (e) => {
+    setData((prevState) => ({
+      ...prevState,
+      description: e.target.value,
+    }));
   };
 
-  const onSubmitChange = async (e) => {
+  const handleExpenseChange = (e) => {
+    setData((prevState) => ({
+      ...prevState,
+      expense: e.target.value,
+    }));
+  };
+
+  console.log(data);
+  const handleUpdateExpense = async (e) => {
     e.preventDefault();
     try {
-      await axios.put("http://127.0.0.1:8000/api/usersupdate/" + id, userField);
-      navigate("/");
-    } catch (err) {
-      console.log("Something Wrong");
+      const token = localStorage.getItem("token");
+      await axios.put(`http://127.0.0.1:8000/api/expenses/${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert("Expense updated successfully!");
+      if (handleClose) handleClose();
+    } catch (error) {
+      console.error("Expense update failed:", error);
     }
   };
 
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-2xl font-bold mb-2">Edit Form</h1>
-      <form>
-        <div className="mb-3 mt-3">
-          <label className="block text-gray-700 text-sm font-bold mb-2"> ID:</label>
-          <input
-            type="text"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="id"
-            placeholder="Enter Your Full Name"
-            name="id"
-            value={id}
-            disabled
-          />
+    <form
+      onSubmit={handleUpdateExpense}
+      className="container d-flex justify-content-center align-items-center vh-100"
+    >
+      <div
+        className="card p-5 shadow border-primary"
+        style={{ maxWidth: "600px" }}
+      >
+        <h2 className="text-center mb-4">Edit Expense</h2>
+        <div className="row g-3">
+          {" "}
+          {/* Inner form for layout */}
+          <div className="col-md-12 text-start">
+            <label htmlFor="title" className="form-label fs-4">
+              Title
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              className="form-control form-control-lg"
+              required
+              placeholder="Enter title"
+              value={data.title}
+              onChange={handleTitleChange}
+            />
+          </div>
+          <div className="col-md-12 text-start">
+            <label htmlFor="description" className="form-label fs-4">
+              Description
+            </label>
+            <input
+              type="text"
+              id="description"
+              name="description"
+              className="form-control form-control-lg"
+              placeholder="Enter description"
+              value={data.description}
+              onChange={handleDescriptionChange}
+            />
+          </div>
+          <div className="col-md-12 text-start">
+            <label htmlFor="expense" className="form-label fs-4">
+              Expense
+            </label>
+            <input
+              type="number"
+              id="expense"
+              name="expense"
+              className="form-control form-control-lg"
+              required
+              placeholder="Enter expense amount"
+              value={data.expense}
+              onChange={handleExpenseChange}
+            />
+          </div>
+          <div className="col-md-12 text-start d-flex justify-content-between">
+            <button className="btn btn-primary btn-lg" type="submit">
+              Save Changes
+            </button>
+          </div>
         </div>
-        <div className="mb-3 mt-3">
-          <label className="block text-gray-700 text-sm font-bold mb-2"> Full Name:</label>
-          <input
-            type="text"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Enter Your Full Name"
-            name="name"
-            value={userField.name}
-            onChange={(e) => changeUserFieldHandler(e)}
-          />
-        </div>
-        <div className="mb-3 mt-3">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-          <input
-            type="email"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="email"
-            placeholder="Enter email"
-            name="email"
-            value={userField.email}
-            onChange={(e) => changeUserFieldHandler(e)}
-          />
-        </div>
-        <div className="mb-3 mt-3">
-          <label className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
-          <input
-            type="password"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="password"
-            placeholder="Enter password"
-            name="password"
-            value={userField.password}
-            onChange={(e) => changeUserFieldHandler(e)}
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={(e) => onSubmitChange(e)}
-        >
-          Update
-        </button>
-      </form>
-      <div className="container mx-auto px-4 flex justify-center">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={clickToBackHandler}>
-          Back To Home
-        </button>
       </div>
-    </div>
+    </form>
   );
-};
+}
 
 export default Edit;

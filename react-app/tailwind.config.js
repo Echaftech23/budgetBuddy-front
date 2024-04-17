@@ -2,8 +2,12 @@
 module.exports = {
   content: [],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        body: ["Poppins", "sans-serif"],
+      },
+    },
   },
   plugins: [],
-}
+};
 
